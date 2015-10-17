@@ -1,42 +1,65 @@
 var gulp = require('gulp');
+var watch = require('gulp-watch');
+var connect = require('gulp-connect');
 
+//var transform = require('vinyl-transform');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var glob = require('glob');
+
+var debowerify = require('debowerify');
 var browserify = require('browserify');
 var tsify = require('tsify');
-var debowerify = require('debowerify');
-var glob = require('glob');
 var uglify = require('gulp-uglify');
-var buffer = require('vinyl-buffer');
+
 
 var config = {
 	artifactsPath: './artifacts',
 	appPath: './app',
-	result: 'application.js'
+	result: './app/application.js'
 };
 
-gulp.task('default', ['scripts']);
+gulp.task('default', ['scripts', 'html']);
 
-gulp.task('scripts', function() {
+gulp.task('scripts', function(cb) {
+
+	/*var browserified = transform(function(filename) {
+		return browserify(filename,  {
+				debug:      true,
+				transform:  ['debowerify'],
+			}).bundle();
+	});*/
+	var bundler = browserify({
+		basedir:    './app',
+		debug:      true//,
+		//transform:  ['debowerify']
+	});
 	
-	glob(config.appPath + '/**/*.ts', {}, function (err, files) {
+	bundler.plugin(tsify);
+	bundler.transform(debowerify);
+	
+	bundler.add('./app.ts')
+	
+	//glob('./**/*.ts', {}, function (err, files) {
+	//	files.forEach(function (file) {
+	//		bundler.add(file);
+	//	});
 
-		var bundler = browserify();
-		files.forEach(function (file) {
-			bundler.add(file);
-			
-			console.log(file);
-		});
+	return bundler.bundle()
+		.pipe(source(config.result))
+		.pipe(buffer())
+		//.pipe(browserified)
+		.pipe(uglify())
+		.pipe(gulp.dest(config.artifactsPath));
+		
+	//	cb();
+	//});
 
-		bundler.plugin(tsify);
-		bundler.transform(debowerify);
+});
 
-		return bundler.bundle()
-			.pipe(source(config.result))
-			.pipe(buffer())
-			.pipe(uglify())
-			.pipe(gulp.dest(config.artifactsPath));
-	}); 
-
+gulp.task('html', function () {
+    return gulp.src(config.appPath + '/**/*.html')
+        .pipe(gulp.dest(config.artifactsPath + '/app'));
 });
 
 gulp.task('bower', function() {
@@ -45,4 +68,11 @@ gulp.task('bower', function() {
 	
 });
 
+gulp.task('web', function() {
+	connect.server({
+		root: config.artifactsPath + '/app',
+		port: 8081,
+		livereload: false
+	});
+});
 

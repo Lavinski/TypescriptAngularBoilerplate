@@ -1,3 +1,5 @@
+import 'angular'
+
 class Settings {
 	projectName : string;
 	constructor() {
