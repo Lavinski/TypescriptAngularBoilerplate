@@ -11,7 +11,8 @@ var debowerify = require('debowerify');
 var browserify = require('browserify');
 var tsify = require('tsify');
 var uglify = require('gulp-uglify');
-
+var browserifyInc = require('browserify-incremental');
+var xtend = require('xtend');
 
 var config = {
 	artifactsPath: './artifacts',
@@ -29,11 +30,13 @@ gulp.task('scripts', function(cb) {
 				transform:  ['debowerify'],
 			}).bundle();
 	});*/
-	var bundler = browserify({
+	var bundler = browserify(xtend(browserifyInc.args, {
 		basedir:    './app',
 		debug:      true//,
 		//transform:  ['debowerify']
-	});
+	}));
+	
+	browserifyInc(bundler, {cacheFile: './browserify-cache.json'});
 	
 	bundler.plugin(tsify);
 	bundler.transform(debowerify);
