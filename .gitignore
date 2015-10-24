@@ -1,2 +1,3 @@
 artifacts/
 browserify-cache.json
+typings/tsd.d.ts

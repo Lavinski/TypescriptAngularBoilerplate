@@ -1,8 +1,14 @@
+// ToDo
+/*
+ - Cached
+ - Less
+ - 
+*/
+
 var gulp = require('gulp');
 var watch = require('gulp-watch');
 var connect = require('gulp-connect');
 
-//var transform = require('vinyl-transform');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var glob = require('glob');
@@ -13,6 +19,11 @@ var tsify = require('tsify');
 var uglify = require('gulp-uglify');
 var browserifyInc = require('browserify-incremental');
 var xtend = require('xtend');
+var tsd = require('gulp-tsd');
+
+gulp.task('tsd', function () {
+    return gulp.src('./tsd.json').pipe(tsd());
+});
 
 var config = {
 	artifactsPath: './artifacts',
@@ -24,58 +35,52 @@ gulp.task('default', ['scripts', 'html']);
 
 gulp.task('scripts', function(cb) {
 
-	/*var browserified = transform(function(filename) {
-		return browserify(filename,  {
-				debug:      true,
-				transform:  ['debowerify'],
-			}).bundle();
-	});*/
 	var bundler = browserify(xtend(browserifyInc.args, {
-		basedir:    './app',
-		debug:      true//,
-		//transform:  ['debowerify']
+		basedir:    '.',
+		debug:      true
 	}));
-	
+
 	browserifyInc(bundler, {cacheFile: './browserify-cache.json'});
-	
+
 	bundler.plugin(tsify);
 	bundler.transform(debowerify);
 	
-	bundler.add('./app.ts')
-	
-	//glob('./**/*.ts', {}, function (err, files) {
-	//	files.forEach(function (file) {
-	//		bundler.add(file);
-	//	});
+	bundler.add('./app/app.ts')
+	bundler.add('./typings/tsd.d.ts')
 
 	return bundler.bundle()
 		.pipe(source(config.result))
 		.pipe(buffer())
-		//.pipe(browserified)
 		.pipe(uglify())
-		.pipe(gulp.dest(config.artifactsPath));
-		
-	//	cb();
-	//});
+		.pipe(gulp.dest(config.artifactsPath))
+		.pipe(connect.reload());
 
 });
 
 gulp.task('html', function () {
-    return gulp.src(config.appPath + '/**/*.html')
-        .pipe(gulp.dest(config.artifactsPath + '/app'));
+	return gulp.src(config.appPath + '/**/*.html')
+		.pipe(gulp.dest(config.artifactsPath + '/app'))
+		.pipe(connect.reload());
 });
 
-gulp.task('bower', function() {
+gulp.task('build', ['scripts', 'html'], function() {
 	
 	//https://github.com/ck86/main-bower-files
 	
 });
 
-gulp.task('web', function() {
+gulp.task('watch', ['build'], function () {
+  gulp.watch([config.appPath + '/**/*.html'], ['html']);
+  gulp.watch([config.appPath + '/**/*.ts'], ['scripts']);
+});
+
+gulp.task('web', ['watch'], function() {
 	connect.server({
 		root: config.artifactsPath + '/app',
 		port: 8081,
 		livereload: false
 	});
 });
+
+
 

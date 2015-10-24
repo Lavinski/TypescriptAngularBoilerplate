@@ -1,8 +1,5 @@
+'use strict';
+
 import 'angular'
 
-class Settings {
-	projectName : string;
-	constructor() {
-		this.projectName = "Password Manager"
-	}
-}
+angular.module("application", []);
