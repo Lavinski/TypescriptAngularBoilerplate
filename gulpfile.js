@@ -20,6 +20,7 @@ var uglify = require('gulp-uglify');
 var browserifyInc = require('browserify-incremental');
 var xtend = require('xtend');
 var tsd = require('gulp-tsd');
+var sourcemaps = require('gulp-sourcemaps');
 
 gulp.task('tsd', function () {
     return gulp.src('./tsd.json').pipe(tsd());
@@ -36,8 +37,8 @@ gulp.task('default', ['scripts', 'html']);
 gulp.task('scripts', function(cb) {
 
 	var bundler = browserify(xtend(browserifyInc.args, {
-		basedir:    '.',
-		debug:      true
+		basedir: '.',
+		debug: true
 	}));
 
 	browserifyInc(bundler, {cacheFile: './browserify-cache.json'});
@@ -51,7 +52,9 @@ gulp.task('scripts', function(cb) {
 	return bundler.bundle()
 		.pipe(source(config.result))
 		.pipe(buffer())
+		.pipe(sourcemaps.init({loadMaps: true}))
 		.pipe(uglify())
+		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest(config.artifactsPath))
 		.pipe(connect.reload());
 
