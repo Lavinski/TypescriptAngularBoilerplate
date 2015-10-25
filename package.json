@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "gulp-connect": "^2.2.0",
+    "gulp-ng-annotate": "^1.1.0",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-tsd": "0.0.4",
     "gulp-watch": "^4.3.5"

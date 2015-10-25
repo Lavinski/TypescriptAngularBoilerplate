@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="application">
+<html ng-app="application" ng-strict-di>
 	<head>
 		<meta charset="utf-8" />
 		<title>Angular + Typescript</title>
@@ -7,6 +7,6 @@
 		<script src="application.js"></script>
 	</head>
 	<body>
-		{{"Hello World"}}
+		<div ui-view></div>
 	</body>
 </html>

@@ -21,6 +21,7 @@ var browserifyInc = require('browserify-incremental');
 var xtend = require('xtend');
 var tsd = require('gulp-tsd');
 var sourcemaps = require('gulp-sourcemaps');
+var ngAnnotate = require('gulp-ng-annotate');
 
 gulp.task('tsd', function () {
     return gulp.src('./tsd.json').pipe(tsd());
@@ -53,7 +54,8 @@ gulp.task('scripts', function(cb) {
 		.pipe(source(config.result))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({loadMaps: true}))
-		.pipe(uglify())
+		.pipe(ngAnnotate())
+		//.pipe(uglify())
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest(config.artifactsPath))
 		.pipe(connect.reload());
