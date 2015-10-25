@@ -8,6 +8,7 @@
 var gulp = require('gulp');
 var watch = require('gulp-watch');
 var connect = require('gulp-connect');
+var cache = require('gulp-cached');
 
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
@@ -22,10 +23,8 @@ var xtend = require('xtend');
 var tsd = require('gulp-tsd');
 var sourcemaps = require('gulp-sourcemaps');
 var ngAnnotate = require('gulp-ng-annotate');
+var plumber = require('gulp-plumber');
 
-gulp.task('tsd', function () {
-    return gulp.src('./tsd.json').pipe(tsd());
-});
 
 var config = {
 	artifactsPath: './artifacts',
@@ -51,11 +50,12 @@ gulp.task('scripts', function(cb) {
 	bundler.add('./typings/tsd.d.ts')
 
 	return bundler.bundle()
+		.pipe(plumber())
 		.pipe(source(config.result))
 		.pipe(buffer())
 		.pipe(sourcemaps.init({loadMaps: true}))
 		.pipe(ngAnnotate())
-		//.pipe(uglify())
+		.pipe(uglify())
 		.pipe(sourcemaps.write('./'))
 		.pipe(gulp.dest(config.artifactsPath))
 		.pipe(connect.reload());
@@ -64,11 +64,20 @@ gulp.task('scripts', function(cb) {
 
 gulp.task('html', function () {
 	return gulp.src(config.appPath + '/**/*.html')
+		.pipe(plumber())
+		.pipe(cache('html'))
 		.pipe(gulp.dest(config.artifactsPath + '/app'))
 		.pipe(connect.reload());
 });
 
-gulp.task('build', ['scripts', 'html'], function() {
+gulp.task('tsd', function () {
+
+	return gulp.src('./tsd.json')
+		.pipe(plumber())
+		.pipe(tsd());
+});
+
+gulp.task('build', ['tsd', 'scripts', 'html'], function() {
 	
 	//https://github.com/ck86/main-bower-files
 	
@@ -86,6 +95,3 @@ gulp.task('web', ['watch'], function() {
 		livereload: false
 	});
 });
-
-
-
